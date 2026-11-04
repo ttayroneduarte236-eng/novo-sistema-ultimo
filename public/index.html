@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DUARTE MOTOS – Gestão</title>
+<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#0b1220"><link rel="icon" href="/icon-192.png"><link rel="apple-touch-icon" href="/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#f1f5f9;--card:#fff;--tx:#0f172a;--mu:#64748b;--ac:#1d4ed8;--bd:#e2e8f0;--ok:#15803d;--bad:#c62828;--sh:0 1px 3px rgba(15,23,42,.08);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1220;--card:#131c2e;--tx:#e5e7eb;--mu:#94a3b8;--ac:#3b82f6;--bd:#243049;--ok:#4ade80;--bad:#f87171;--sh:none}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--tx);line-height:1.4}
+header{background:linear-gradient(90deg,#0b1220,#16294a);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:3px solid #f59e0b}
+header h1{margin:0;font-size:20px;letter-spacing:3px;font-weight:800}header h1 span{color:#f59e0b}
+nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+nav button{background:transparent;color:#cbd5e1;border:0;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:14px}
+nav button:hover{background:rgba(255,255,255,.1)}nav button.on{background:var(--ac);color:#fff}
+main{max-width:1100px;margin:auto;padding:20px 16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.grid .card{margin:0}
+.kpi{border-left:4px solid var(--ac)}.kpi b{display:block;font-size:22px;margin-top:2px}.kpi small{color:var(--mu);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+input,select{padding:9px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font-size:14px;max-width:100%}
+input:focus,select:focus{outline:2px solid var(--ac)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.btn{background:var(--ac);color:#fff;border:0;padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px}
+.btn:hover{filter:brightness(1.1)}.btn.s{background:#475569;font-weight:500;padding:6px 11px}
+.sc{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mu);font-weight:600}
+th,td{padding:10px 8px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+tr:hover td{background:rgba(100,116,139,.07)}
+.low{color:var(--bad);font-weight:700}.in{color:var(--ok)}.out{color:var(--bad)}
+section{display:none}section.on{display:block}h2{margin:0 0 12px;font-size:16px;font-weight:700}
+a{color:var(--ac)}
+@media print{header,nav,.np{display:none!important}body{background:#fff;color:#000}.card{box-shadow:none}}
+</style></head><body>
+<header><h1>DUARTE <span>MOTOS</span></h1><nav class="np" id="nav"></nav><button class="btn s np" id="sair" onclick="sair()" style="display:none">Sair</button></header>
+<div id="auth" style="position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:99;padding:16px"><form class="card" style="width:100%;max-width:340px" onsubmit="enviar();return false"><h1 style="margin:0 0 4px;letter-spacing:2px">DUARTE <span style="color:var(--ac)">MOTOS</span></h1><small id="asub"></small><h2 id="atit" style="margin-top:14px"></h2><div class="row"><input id="au" placeholder="Usuário" autocomplete="username" style="width:100%"></div><div class="row"><input id="ap" type="password" placeholder="Senha" autocomplete="current-password" style="width:100%"></div><div class="row" id="acodw"><input id="acod" placeholder="Código de convite" style="width:100%"></div><div class="row"><button class="btn" id="abtn" style="width:100%"></button></div><p class="low" id="aerr"></p><a href="#" id="atg" onclick="alterna();return false"></a></form></div>
+<main>
+<section id="painel" class="on"><div class="grid" id="kpis"></div><div class="grid" id="kpis2" style="margin-top:12px"></div><div class="grid" style="margin-top:12px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"><div class="card"><h2>Entradas x Saídas por mês</h2><div id="ch1"></div></div><div class="card"><h2>Entradas nos últimos 15 dias</h2><div id="ch2"></div></div></div>
+<div class="card" style="margin-top:14px"><h2>Estoque baixo</h2><div class="sc" id="baixo"></div></div></section>
+
+<section id="estoque"><div class="card"><h2>Cadastrar peça</h2><div class="row">
+<input id="pn" placeholder="Peça"><input id="pq" type="number" placeholder="Qtd" style="width:80px"><input id="pm" type="number" placeholder="Mínimo" style="width:90px"><input id="pc" type="number" step="0.01" placeholder="Custo R$" style="width:100px"><input id="pv" type="number" step="0.01" placeholder="Venda R$" style="width:100px">
+<button class="btn" onclick="addPeca()">Adicionar</button></div></div>
+<div class="card"><h2>Estoque</h2><div class="sc" id="tbEst"></div></div></section>
+
+<section id="nota"><div class="card"><h2>Emitir nota</h2><div class="row"><select id="ncl" onchange="pickCli()"></select><select id="nmo" onchange="pickMoto()"><option value="">Moto</option></select></div><div class="row">
+<input id="nc" placeholder="Cliente"><input id="nm" placeholder="Moto / Placa"></div>
+<div class="row"><select id="ns"><option value="">Selecione peça</option></select><input id="nq" type="number" value="1" min="1" style="width:70px"><button class="btn s" onclick="addItemP()">+ Peça</button></div>
+<div class="row"><input id="sd" placeholder="Serviço (mão de obra)"><input id="sv" type="number" step="0.01" placeholder="Valor R$" style="width:110px"><button class="btn s" onclick="addItemS()">+ Serviço</button></div>
+<div class="row"><select id="np"><option>Dinheiro</option><option>Pix</option><option>Cartão</option><option>Fiado</option></select></div>
+<div class="sc" id="itens"></div>
+<div class="row" style="margin-top:10px"><button class="btn" onclick="emitir()">Emitir nota e baixar estoque</button></div></div>
+<div class="card"><h2>Notas emitidas</h2><div class="sc" id="tbNotas"></div></div></section>
+
+<section id="fin"><div class="card"><h2>Lançamento financeiro</h2><div class="row">
+<select id="ft"><option value="in">Entrada</option><option value="out">Saída</option></select><input id="fd" placeholder="Descrição"><input id="fv" type="number" step="0.01" placeholder="Valor R$" style="width:110px"><button class="btn" onclick="addFin()">Lançar</button></div></div>
+<div class="grid" id="fk"></div><div class="card" style="margin-top:14px"><h2>Movimentações</h2><div class="sc" id="tbFin"></div></div></section>
+<section id="clientes"><div class="card np"><h2>Cadastrar cliente</h2><div class="row"><input id="cln" placeholder="Nome completo"><input id="clt" placeholder="Telefone / WhatsApp"><input id="cld" placeholder="CPF (opcional)"><button class="btn" onclick="addCli()">Cadastrar</button></div></div>
+<div class="card np"><h2>Cadastrar moto</h2><div class="row"><select id="mc"></select><input id="mm" placeholder="Modelo (ex.: CG 160)"><input id="mp" placeholder="Placa" style="width:110px"><input id="ma" type="number" placeholder="Ano" style="width:90px"><input id="mk" type="number" placeholder="Km" style="width:90px"><button class="btn" onclick="addMoto()">Cadastrar</button></div></div>
+<div class="card"><h2>Clientes e motos</h2><input id="cbusca" class="np" placeholder="Buscar por nome, telefone, modelo ou placa" oninput="rcli()" style="width:100%;margin-bottom:10px"><div class="sc" id="tbCli"></div></div></section>
+<section id="func"><div class="card np"><h2>Cadastrar funcionário</h2><div class="row"><input id="fnn" placeholder="Nome completo"><input id="fcg" placeholder="Cargo (ex.: Mecânico)"><input id="fsl" type="number" step="0.01" placeholder="Salário R$" style="width:120px"><input id="ftl" placeholder="Telefone"><input id="fad" type="date" title="Data de admissão"><button class="btn" onclick="addFunc()">Cadastrar</button></div></div>
+<div class="grid" id="fuk"></div>
+<div class="card" style="margin-top:14px"><h2>Funcionários e salários</h2><div class="sc" id="tbFu"></div></div>
+<div class="card"><h2>Pagamentos realizados</h2><div class="sc" id="tbPg"></div></div></section>
+<section id="banco"><div class="card np"><h2>Open Finance – conta bancária da oficina</h2><div class="row"><button class="btn" id="bkc" onclick="bkConectar()">Conectar banco</button><button class="btn s" id="bks" onclick="bkSync()">Sincronizar agora</button><label class="btn s" style="cursor:pointer">Importar extrato (OFX/CSV)<input type="file" id="bkf" accept=".ofx,.csv,.txt" style="display:none" onchange="bkArq(this)"></label><button class="btn s" id="bkd" onclick="bkDesc()">Desconectar</button></div><small id="bkm"></small></div>
+<div class="grid" id="bkk"></div>
+<div class="card" style="margin-top:14px"><h2>Movimentações da conta</h2><div class="row np"><select id="bkfl" onchange="rbk()"><option value="p">Pendentes de conciliação</option><option value="t">Todas</option></select><button class="btn s" onclick="bkTodos()">Lançar todos os pendentes</button></div><small class="np">Lançar = vira entrada ou saída no Financeiro. Já lançado = esse valor já foi registrado por nota ou gasto. Ignorar = não conta.</small><div class="sc" id="bkt" style="margin-top:8px"></div></div></section>
+<section id="vendas"><div class="grid" id="vk"></div><div class="card np" style="margin-top:14px"><div class="row" style="margin:0"><select id="vper" onchange="rv()"><option value="0">Todo o período</option><option value="1">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option></select><button class="btn s" onclick="window.print()">Imprimir relatório</button></div></div><div class="card"><h2>Vendas por forma de pagamento</h2><div class="sc" id="vpg"></div></div><div class="card"><h2>Notas do período</h2><div class="sc" id="vl"></div></div></section>
+<section id="fiado"><div class="card np"><h2>Lançar fiado avulso</h2><div class="row"><input id="xc" placeholder="Cliente"><input id="xd" placeholder="Descrição"><input id="xv" type="number" step="0.01" placeholder="Valor R$" style="width:110px"><button class="btn" onclick="addFiado()">Lançar</button></div></div><div class="grid" id="fk2"></div><div class="card" style="margin-top:14px"><h2>Fiados</h2><div class="sc" id="tbFi"></div></div></section>
+<section id="gastos"><div class="card np"><h2>Registrar gasto</h2><div class="row"><select id="gc"><option>Peças</option><option>Aluguel</option><option>Energia/Água</option><option>Salários</option><option>Ferramentas</option><option>Outros</option></select><input id="gd" placeholder="Descrição"><input id="gv" type="number" step="0.01" placeholder="Valor R$" style="width:110px"><button class="btn" onclick="addGasto()">Lançar</button></div></div><div class="grid" id="gk"></div><div class="card" style="margin-top:14px"><h2>Gastos</h2><div class="sc" id="tbG"></div></div></section>
+<section id="forn"><div class="card np"><h2>Cadastrar fornecedor</h2><div class="row"><input id="fn" placeholder="Nome"><input id="ft2" placeholder="Telefone"><button class="btn" onclick="addForn()">Adicionar</button></div></div><div class="grid" id="fok"></div><div class="card" style="margin-top:14px"><h2>Fornecedores</h2><div class="sc" id="tbF"></div></div></section>
+<section id="whats"><div class="card"><h2>WhatsApp da empresa</h2><div class="row"><input id="wn" placeholder="Número com DDD (ex.: 45 99999-9999)" style="min-width:240px"><input id="wm" placeholder="Mensagem inicial do link (opcional)" style="flex:1;min-width:240px"><button class="btn" onclick="saveWa()">Salvar</button></div><small id="wmsg"></small><div id="wl" style="margin-top:12px"></div></div>
+<div class="card"><h2>Enviar mensagem a um cliente</h2><div class="row"><select id="wc" onchange="wtpl()"></select><select id="wt" onchange="wtpl()"><option value="0">Moto pronta para retirada</option><option value="1">Lembrete de revisão</option><option value="2">Mensagem livre</option></select></div><textarea id="wx" rows="4" style="width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font:inherit"></textarea><div class="row" style="margin-top:10px"><button class="btn" onclick="wsend()">Abrir no WhatsApp</button></div></div></section>
+<section id="pag"><div class="card"><h2>Dados de recebimento</h2><div class="row"><input id="cp" placeholder="Chave Pix (CPF, CNPJ, e-mail, telefone ou aleatória)" style="min-width:260px"><input id="cn" placeholder="Nome do recebedor"><input id="cc" placeholder="Cidade"></div><div class="row"><input id="cl" placeholder="Link de pagamento no cartão (https://...)" style="min-width:260px"><button class="btn" onclick="saveCfg()">Salvar</button></div><small id="cmsg"></small></div>
+<div class="card"><h2>Cobrar uma nota</h2><div class="row"><select id="pnota" onchange="cobrar()"></select></div><div id="cobr"></div></div></section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+const $=id=>document.getElementById(id),R=v=>'R$ '+Number(v).toFixed(2).replace('.',',');
+let D={est:[],notas:[],fin:[],seq:1};
+const save=()=>{fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(D)}).then(r=>{if(r.status==401)location.reload();else if(!r.ok)alert('Falha ao salvar')}).catch(()=>alert('Sem conexão: dados não salvos'));render()};
+let cart=[];
+const tabs=[['painel','Painel'],['estoque','Estoque'],['clientes','Clientes'],['nota','Nota'],['vendas','Vendas'],['fiado','Fiados'],['gastos','Gastos'],['forn','Fornecedores'],['func','Funcionários'],['fin','Financeiro'],['banco','Banco'],['whats','WhatsApp'],['pag','Pagamentos']];
+$('nav').innerHTML=tabs.map(t=>`<button data-t="${t[0]}" onclick="go('${t[0]}')">${t[1]}</button>`).join('');
+function go(t){document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id==t));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==t))}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function addPeca(){const n=$('pn').value.trim();if(!n)return;D.est.push({id:Date.now(),n,q:+$('pq').value||0,m:+$('pm').value||0,c:+$('pc').value||0,v:+$('pv').value||0});['pn','pq','pm','pc','pv'].forEach(i=>$(i).value='');save()}
+function delPeca(id){D.est=D.est.filter(p=>p.id!=id);save()}
+function ajusta(id,d){const p=D.est.find(p=>p.id==id);p.q=Math.max(0,p.q+d);save()}
+function addItemP(){const p=D.est.find(p=>p.id==$('ns').value),q=+$('nq').value;if(!p||q<1)return;if(q>p.q){alert('Estoque insuficiente');return}cart.push({t:'p',id:p.id,d:p.n,q,v:p.v});renderCart()}
+function addItemS(){const d=$('sd').value.trim(),v=+$('sv').value;if(!d||!v)return;cart.push({t:'s',d,q:1,v});$('sd').value=$('sv').value='';renderCart()}
+const tot=()=>cart.reduce((a,i)=>a+i.q*i.v,0);
+function renderCart(){$('itens').innerHTML=cart.length?`<table><tr><th>Item</th><th>Qtd</th><th>Valor</th><th></th></tr>${cart.map((i,k)=>`<tr><td>${esc(i.d)}</td><td>${i.q}</td><td>${R(i.q*i.v)}</td><td><button class="btn s" onclick="cart.splice(${k},1);renderCart()">x</button></td></tr>`).join('')}<tr><th colspan="2">Total</th><th colspan="2">${R(tot())}</th></tr></table>`:'<small>Nenhum item.</small>'}
+function emitir(){if(!cart.length||!$('nc').value.trim()){alert('Informe o cliente e itens');return}
+const need={};for(const i of cart)if(i.t=='p')need[i.id]=(need[i.id]||0)+i.q;
+for(const id in need){const p=D.est.find(p=>p.id==id);if(!p||p.q<need[id]){alert('Estoque insuficiente para '+(p?p.n:'peça'));return}}
+for(const id in need)D.est.find(p=>p.id==id).q-=need[id];
+const n={num:D.seq++,ts:Date.now(),data:new Date().toLocaleString('pt-BR'),cli:$('nc').value.trim(),moto:$('nm').value.trim(),pg:$('np').value,itens:cart,total:tot()};
+D.notas.unshift(n);if(n.pg=='Fiado')D.fiados.push({id:Date.now(),num:n.num,cli:n.cli,v:n.total,pago:0,data:n.data});else D.fin.unshift({data:n.data,t:'in',d:'Nota nº '+n.num+' – '+n.cli,v:n.total});
+cart=[];$('nc').value=$('nm').value='';$('ncl').value='';$('nmo').innerHTML='<option value="">Moto</option>';save();renderCart();imprimir(n.num)}
+function imprimir(num){const n=D.notas.find(x=>x.num==num);if(!n)return;
+const w=window.open('','_blank');if(!w){alert('Permita pop-ups para imprimir a nota');return}
+w.document.write(`<title>Nota ${n.num}</title><body style="font-family:Arial;max-width:600px;margin:20px auto"><h2 style="margin:0">DUARTE MOTOS</h2><small>Oficina de motos – Nota de serviço nº ${n.num}</small><hr><p>Data: ${n.data}<br>Cliente: ${esc(n.cli)}<br>Moto/Placa: ${esc(n.moto)}<br>Pagamento: ${n.pg}${n.pg=='Fiado'?' (a pagar)':''}</p><table width="100%" border="1" cellspacing="0" cellpadding="6"><tr><th align=left>Item</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr>${n.itens.map(i=>`<tr><td>${esc(i.d)}</td><td align=center>${i.q}</td><td>${R(i.v)}</td><td>${R(i.q*i.v)}</td></tr>`).join('')}</table><h3 align=right>Total: ${R(n.total)}</h3><p><small>Documento sem valor fiscal.</small></p><script>print()<\/script>`);w.document.close()}
+function addFin(){const v=+$('fv').value,d=$('fd').value.trim();if(!v||!d)return;D.fin.unshift({data:new Date().toLocaleString('pt-BR'),t:$('ft').value,d,v});$('fd').value=$('fv').value='';save()}
+D.cfg=D.cfg||{};
+function saveCfg(){D.cfg={k:$('cp').value.trim(),n:$('cn').value.trim(),c:$('cc').value.trim(),l:$('cl').value.trim()};save();$('cmsg').textContent='Dados salvos.';cobrar()}
+function norm(s,l){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9 ]/g,'').toUpperCase().slice(0,l)}
+const fld=(id,v)=>id+String(v.length).padStart(2,'0')+v;
+function crc(s){let c=0xFFFF;for(let i=0;i<s.length;i++){c^=s.charCodeAt(i)<<8;for(let j=0;j<8;j++)c=c&0x8000?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF}return c.toString(16).toUpperCase().padStart(4,'0')}
+function pixCode(key,nome,cid,val){const p=fld('00','01')+fld('01','11')+fld('26',fld('00','br.gov.bcb.pix')+fld('01',key))+fld('52','0000')+fld('53','986')+fld('54',val.toFixed(2))+fld('58','BR')+fld('59',nome)+fld('60',cid)+fld('62',fld('05','***'))+'6304';return p+crc(p)}
+function rp(){const s=$('pnota'),cur=s.value;s.innerHTML='<option value="">Selecione a nota</option>'+D.notas.map(n=>`<option value="${n.num}">Nota ${n.num} – ${esc(n.cli)} – ${R(n.total)}</option>`).join('');s.value=cur}
+function cobrar(){const n=D.notas.find(x=>x.num==$('pnota').value),o=$('cobr');if(!n){o.innerHTML='';return}
+let h=`<p><b>Total: ${R(n.total)}</b></p>`;const c=D.cfg;
+if(c.k&&c.n&&c.c){try{const code=pixCode(c.k,norm(c.n,25),norm(c.c,15),n.total);const q=qrcode(0,'M');q.addData(code);q.make();
+h+=`<h3>Pix</h3><div style="background:#fff;padding:10px;display:inline-block;border-radius:8px">${q.createSvgTag(5)}</div><div class="row" style="margin-top:10px"><input id="cod" readonly value="${code}" style="flex:1;min-width:200px"><button class="btn" onclick="copiar()">Copiar Pix</button></div>`}catch(e){h+='<p>Não foi possível gerar o Pix.</p>'}}
+else h+='<p><small>Preencha chave Pix, nome e cidade acima para gerar o Pix.</small></p>';
+h+='<h3>Cartão</h3>'+(c.l&&/^https?:\/\//.test(c.l)?`<button class="btn" onclick="window.open(D.cfg.l,'_blank')">Abrir link de pagamento no cartão</button>`:'<p><small>Informe o link de pagamento do cartão acima.</small></p>');
+h+=MPH(n);o.innerHTML=h}
+const MPH=n=>`<h3>Mercado Pago (cobrança automática)</h3>${n.pago?'<p class="in"><b>Pago ✔</b></p>':''}<div class="row"><button class="btn" onclick="mpPix(${n.num})">Gerar Pix</button><button class="btn" onclick="mpLink(${n.num})">Gerar link de cartão</button><button class="btn" onclick="mpOF(${n.num})">Pix por Open Finance</button><button class="btn s" onclick="mpCheck(${n.num})">Verificar pagamento</button></div><div id="mpout"></div>`;
+const mpMsg=(m,c)=>{if($('mpout'))$('mpout').innerHTML=`<p class="${c||''}">${esc(m)}</p>`};
+async function mpPix(num){mpMsg('Gerando Pix…');try{const r=await api('/api/mp/pix',{num});let q='';try{const z=qrcode(0,'M');z.addData(r.qr);z.make();q=`<div style="background:#fff;padding:10px;display:inline-block;border-radius:8px">${z.createSvgTag(5)}</div>`}catch(e){}
+$('mpout').innerHTML=`<p>Pix gerado. Mostre o QR Code ao cliente:</p>${q}<div class="row" style="margin-top:8px"><input id="mpc" readonly value="${esc(r.qr)}" style="flex:1;min-width:200px"><button class="btn" onclick="$('mpc').select();try{navigator.clipboard.writeText($('mpc').value)}catch(e){}">Copiar</button></div><p><small>Quando o cliente pagar, o sistema confirma sozinho (ou toque em Verificar pagamento).</small></p>`;mpPoll(num)}catch(e){mpMsg(e.message,'low')}}
+async function mpOF(num){mpMsg('Gerando…');try{const r=await api('/api/mp/openfinance',{num});$('mpout').innerHTML=`<p>Cobrança por Open Finance gerada. O cliente escolhe o banco e autoriza no app dele: <a href="${esc(r.url)}" target="_blank" rel="noopener">abrir</a></p><div class="row"><input id="mpo" readonly value="${esc(r.url)}" style="flex:1;min-width:200px"><button class="btn" onclick="$('mpo').select();try{navigator.clipboard.writeText($('mpo').value)}catch(e){}">Copiar</button></div><p><small>Envie esse link ao cliente pelo WhatsApp. O sistema confirma o pagamento sozinho.</small></p>`;mpPoll(num)}catch(e){mpMsg(e.message,'low')}}
+function finDeNota(f,n){const d=String(f.d);return f.nota==n||d.startsWith('Nota nº '+n+' – ')||d.endsWith('(nota '+n+')')||d=='Mercado Pago – nota '+n}
+function delNota(num){const n=D.notas.find(x=>x.num==num);if(!n)return;if(!confirm('Excluir a nota nº '+num+' ('+n.cli+', '+R(n.total)+')?\n\nAs peças voltam ao estoque e os lançamentos dessa nota no financeiro e nos fiados também são removidos. Não dá para desfazer.'))return;
+n.itens.forEach(i=>{if(i.t=='p'){const p=D.est.find(x=>x.id==i.id);if(p)p.q+=i.q}});
+D.fin=D.fin.filter(f=>!finDeNota(f,num));D.fiados=D.fiados.filter(f=>f.num!=num);D.notas=D.notas.filter(x=>x.num!=num);save()}
+function delFin(i){const f=D.fin[i];if(!f||!confirm('Excluir este lançamento ('+f.d+', '+R(f.v)+')?'))return;D.fin.splice(i,1);save()}
+function delGasto(id){const g=D.gastos.find(x=>x.id==id);if(!g||!confirm('Excluir o gasto "'+g.d+'" ('+R(g.v)+')? A saída correspondente no financeiro também será removida.'))return;const k=D.fin.findIndex(f=>f.t=='out'&&f.data==g.data&&f.v==g.v);if(k>=0)D.fin.splice(k,1);D.gastos=D.gastos.filter(x=>x.id!=id);save()}
+function delPag(pid){const p=D.pagtos.find(x=>x.id==pid);if(!p||!confirm('Excluir o pagamento de '+R(p.v)+' a '+p.n+'? O gasto e a saída no financeiro também serão removidos.'))return;const k=D.fin.findIndex(f=>f.t=='out'&&f.data==p.data&&f.v==p.v);if(k>=0)D.fin.splice(k,1);D.gastos=D.gastos.filter(x=>x.id!=pid+1);D.pagtos=D.pagtos.filter(x=>x.id!=pid);save()}
+function delFiado(id){const f=D.fiados.find(x=>x.id==id);if(!f||!confirm('Excluir o fiado de '+f.cli+' ('+R(f.v)+')? A nota continua existindo.'))return;D.fiados=D.fiados.filter(x=>x.id!=id);save()}
+async function mpLink(num){mpMsg('Gerando link…');try{const r=await api('/api/mp/link',{num});$('mpout').innerHTML=`<p>Link de pagamento gerado: <a href="${esc(r.url)}" target="_blank" rel="noopener">abrir</a></p><div class="row"><input id="mpl" readonly value="${esc(r.url)}" style="flex:1;min-width:200px"><button class="btn" onclick="$('mpl').select();try{navigator.clipboard.writeText($('mpl').value)}catch(e){}">Copiar</button></div><p><small>Envie esse link ao cliente pelo WhatsApp.</small></p>`;mpPoll(num)}catch(e){mpMsg(e.message,'low')}}
+async function mpCheck(num){mpMsg('Verificando…');try{const r=await api('/api/mp/status/'+num);if(r.approved){baixaMp(num);mpMsg('Pagamento aprovado ✔','in')}else mpMsg('Ainda não foi pago.')}catch(e){mpMsg(e.message,'low')}}
+let mpT;function mpPoll(num){clearInterval(mpT);let k=0;mpT=setInterval(async()=>{if(++k>60||!$('mpout')){clearInterval(mpT);return}try{const r=await api('/api/mp/status/'+num);if(r.approved){clearInterval(mpT);baixaMp(num);mpMsg('Pagamento aprovado ✔','in')}}catch(e){}},5000)}
+function baixaMp(num){const n=D.notas.find(x=>x.num==num);if(!n||n.pago)return;n.pago=true;const f=D.fiados.find(x=>x.num==num&&x.v-x.pago>0.005);if(f){const r=f.v-f.pago;f.pago=f.v;D.fin.unshift({data:now(),t:'in',d:'Mercado Pago – nota '+num,v:r})}save()}
+function copiar(){const i=$('cod');i.select();try{navigator.clipboard.writeText(i.value)}catch(e){try{document.execCommand('copy')}catch(_){}}}
+const K=(l,v)=>`<div class="card kpi"><small>${l}</small><b>${v}</b></div>`;
+const num=s=>parseFloat(String(s).replace(',','.')),now=()=>new Date().toLocaleString('pt-BR');
+function rv(){const d=+$('vper').value,lim=d==1?new Date().setHours(0,0,0,0):d?Date.now()-d*864e5:0;
+const L=D.notas.filter(n=>!lim||(n.ts||0)>=lim),T=L.reduce((a,n)=>a+n.total,0),F=L.filter(n=>n.pg=='Fiado').reduce((a,n)=>a+n.total,0);
+$('vk').innerHTML=K('Vendas totais',R(T))+K('Notas',L.length)+K('Ticket médio',R(L.length?T/L.length:0))+K('Vendido no fiado',R(F));
+const pg={};L.forEach(n=>pg[n.pg]=(pg[n.pg]||0)+n.total);
+$('vpg').innerHTML=L.length?`<table>${Object.keys(pg).map(p=>`<tr><td>${p}</td><td>${R(pg[p])}</td></tr>`).join('')}</table>`:'<small>Sem vendas.</small>';
+$('vl').innerHTML=L.length?`<table><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Pagamento</th><th>Total</th><th class="np"></th></tr>${L.map(n=>`<tr><td>${n.num}</td><td>${n.data}</td><td>${esc(n.cli)}</td><td>${n.pg}</td><td>${R(n.total)}</td><td class="np"><button class="btn s" onclick="imprimir(${n.num})">Imprimir</button> <button class="btn s" onclick="zapNota(${n.num})">WhatsApp</button> <button class="btn s" onclick="delNota(${n.num})">Excluir</button></td></tr>`).join('')}</table>`:'<small>Sem notas.</small>'}
+function rf(){const rest=f=>f.v-f.pago,A=D.fiados.slice().sort((a,b)=>(rest(b)>0.005)-(rest(a)>0.005));
+$('fk2').innerHTML=K('Total a receber',R(A.reduce((a,f)=>a+rest(f),0)))+K('Clientes devendo',new Set(A.filter(f=>rest(f)>0.005).map(f=>f.cli.toLowerCase())).size);
+$('tbFi').innerHTML=A.length?`<table><tr><th>Data</th><th>Cliente</th><th>Nota</th><th>Total</th><th>Pago</th><th>Restante</th><th class="np"></th></tr>${A.map(f=>`<tr><td>${f.data}</td><td>${esc(f.cli)}</td><td>${f.num||'-'}</td><td>${R(f.v)}</td><td>${R(f.pago)}</td><td class="${rest(f)>0.005?'low':'in'}">${rest(f)>0.005?R(rest(f)):'Quitado'}</td><td class="np">${rest(f)>0.005?`<button class="btn s" onclick="receber(${f.id})">Receber</button> <button class="btn s" onclick="zapCobrar(${f.id})">Cobrar no WhatsApp</button> `:''}${f.num?`<button class="btn s" onclick="imprimir(${f.num})">Nota</button>`:''} <button class="btn s" onclick="delFiado(${f.id})">Excluir</button></td></tr>`).join('')}</table>`:'<small>Nenhum fiado.</small>'}
+function receber(id){const f=D.fiados.find(x=>x.id==id),r=f.v-f.pago,v=num(prompt('Valor recebido de '+f.cli+' (restante '+R(r)+')',r.toFixed(2)));if(isNaN(v))return;if(!(v>0)||v>r+0.005){alert('Valor inválido');return}f.pago=Math.min(f.v,f.pago+v);D.fin.unshift({data:now(),t:'in',d:'Fiado recebido – '+f.cli+(f.num?' (nota '+f.num+')':''),v});save()}
+function addFiado(){const c=$('xc').value.trim(),v=+$('xv').value;if(!c||!(v>0))return;D.fiados.push({id:Date.now(),num:0,cli:c,desc:$('xd').value.trim(),v,pago:0,data:now()});$('xc').value=$('xd').value=$('xv').value='';save()}
+function addGasto(){const d=$('gd').value.trim(),v=+$('gv').value,c=$('gc').value;if(!d||!(v>0))return;const data=now();D.gastos.unshift({id:Date.now(),data,cat:c,d,v});D.fin.unshift({data,t:'out',d:c+': '+d,v});$('gd').value=$('gv').value='';save()}
+function rg(){const t={};D.gastos.forEach(g=>t[g.cat]=(t[g.cat]||0)+g.v);
+$('gk').innerHTML=K('Total de gastos',R(D.gastos.reduce((a,g)=>a+g.v,0)))+Object.keys(t).map(c=>K(esc(c),R(t[c]))).join('');
+$('tbG').innerHTML=D.gastos.length?`<table><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th class="np"></th></tr>${D.gastos.map(g=>`<tr><td>${g.data}</td><td>${esc(g.cat)}</td><td>${esc(g.d)}</td><td class="out">${R(g.v)}</td><td class="np"><button class="btn s" onclick="delGasto(${g.id})">Excluir</button></td></tr>`).join('')}</table>`:'<small>Sem gastos.</small>'}
+function addForn(){const n=$('fn').value.trim();if(!n)return;D.forn.push({id:Date.now(),n,tel:$('ft2').value.trim(),deb:0});$('fn').value=$('ft2').value='';save()}
+function compraF(id){const f=D.forn.find(x=>x.id==id),v=num(prompt('Valor da compra a prazo com '+f.n,''));if(!(v>0))return;f.deb+=v;save()}
+function pagarF(id){const f=D.forn.find(x=>x.id==id),v=num(prompt('Valor pago a '+f.n+' (dívida '+R(f.deb)+')',f.deb.toFixed(2)));if(!(v>0)||v>f.deb+0.005)return;f.deb=Math.max(0,f.deb-v);const data=now();D.gastos.unshift({id:Date.now(),data,cat:'Fornecedor',d:'Pagamento – '+f.n,v});D.fin.unshift({data,t:'out',d:'Fornecedor: '+f.n,v});save()}
+function delF(id){if(confirm('Excluir fornecedor?')){D.forn=D.forn.filter(x=>x.id!=id);save()}}
+function rfo(){$('fok').innerHTML=K('Total devido a fornecedores',R(D.forn.reduce((a,f)=>a+f.deb,0)))+K('Fornecedores',D.forn.length);
+$('tbF').innerHTML=D.forn.length?`<table><tr><th>Fornecedor</th><th>Telefone</th><th>Dívida</th><th class="np"></th></tr>${D.forn.map(f=>`<tr><td>${esc(f.n)}</td><td>${esc(f.tel)}</td><td class="${f.deb>0.005?'low':'in'}">${R(f.deb)}</td><td class="np"><button class="btn s" onclick="compraF(${f.id})">+ Compra a prazo</button> <button class="btn s" onclick="pagarF(${f.id})">Pagar</button> <button class="btn s" onclick="delF(${f.id})">x</button></td></tr>`).join('')}</table>`:'<small>Nenhum fornecedor.</small>'}
+function addCli(){const n=$('cln').value.trim();if(!n)return;D.clientes.push({id:Date.now(),n,tel:$('clt').value.trim(),doc:$('cld').value.trim(),motos:[]});['cln','clt','cld'].forEach(i=>$(i).value='');save()}
+function addMoto(){const c=D.clientes.find(x=>x.id==$('mc').value),m=$('mm').value.trim();if(!c||!m){alert('Escolha o cliente e informe o modelo');return}c.motos.push({id:Date.now(),m,p:$('mp').value.trim().toUpperCase(),a:$('ma').value,k:$('mk').value});['mm','mp','ma','mk'].forEach(i=>$(i).value='');save()}
+function delMoto(cid,mid){if(!confirm('Excluir esta moto?'))return;const c=D.clientes.find(x=>x.id==cid);c.motos=c.motos.filter(x=>x.id!=mid);save()}
+function delCli(id){if(!confirm('Excluir cliente e suas motos?'))return;D.clientes=D.clientes.filter(x=>x.id!=id);save()}
+function pickCli(){const c=D.clientes.find(x=>x.id==$('ncl').value);$('nmo').innerHTML='<option value="">Moto</option>'+(c?c.motos.map(m=>`<option value="${m.id}">${esc(m.m)} ${esc(m.p)}</option>`).join(''):'');if(c){$('nc').value=c.n;if(c.motos.length==1){$('nmo').value=c.motos[0].id;pickMoto()}}}
+function pickMoto(){const c=D.clientes.find(x=>x.id==$('ncl').value),m=c&&c.motos.find(x=>x.id==$('nmo').value);if(m)$('nm').value=m.m+(m.p?' – '+m.p:'')}
+function rcli(){const o=D.clientes.map(c=>`<option value="${c.id}">${esc(c.n)}</option>`).join('');
+let e=$('mc'),v=e.value;e.innerHTML='<option value="">Cliente da moto</option>'+o;e.value=v;
+e=$('ncl');v=e.value;e.innerHTML='<option value="">Cliente cadastrado (opcional)</option>'+o;e.value=v;
+const q=$('cbusca').value.toLowerCase(),L=D.clientes.filter(c=>!q||(c.n+' '+c.tel+' '+c.motos.map(m=>m.p+' '+m.m).join(' ')).toLowerCase().includes(q));
+$('tbCli').innerHTML=L.length?`<table><tr><th>Cliente</th><th>Telefone</th><th>Motos</th><th>Notas</th><th>Total gasto</th><th class="np"></th></tr>${L.map(c=>{const N=D.notas.filter(n=>n.cli.toLowerCase()==c.n.toLowerCase());return `<tr><td>${esc(c.n)}</td><td>${esc(c.tel)}</td><td>${c.motos.map(m=>`${esc(m.m)}${m.p?' – '+esc(m.p):''}${m.a?' ('+esc(m.a)+')':''} <a href="#" class="np" onclick="delMoto(${c.id},${m.id});return false">×</a>`).join('<br>')||'<small>nenhuma</small>'}</td><td>${N.length}</td><td>${R(N.reduce((a,n)=>a+n.total,0))}</td><td class="np"><button class="btn s" onclick="delCli(${c.id})">Excluir</button></td></tr>`}).join('')}</table>`:'<small>Nenhum cliente cadastrado.</small>'}
+let WAU='';
+const fone=t=>{let d=String(t||'').replace(/\D/g,'');if(d.length<10)return '';if(d.length<=11)d='55'+d;return d};
+function wa(tel,msg){const f=fone(tel);if(!f){alert('Telefone inválido. Use o número com DDD.');return}window.open('https://wa.me/'+f+'?text='+encodeURIComponent(msg),'_blank')}
+const telCli=nome=>{const c=D.clientes.find(x=>x.n.toLowerCase()==String(nome).toLowerCase());return c?c.tel:''};
+function pedeTel(nome){let t=telCli(nome);if(!fone(t))t=prompt('Telefone com DDD de '+nome,'')||'';return t}
+function zapNota(num){const n=D.notas.find(x=>x.num==num),t=pedeTel(n.cli);if(!t)return;
+const it=n.itens.map(i=>'• '+i.d+(i.q>1?' x'+i.q:'')+': '+R(i.q*i.v)).join('\n');
+wa(t,'Olá, '+n.cli+'! Segue o resumo do seu atendimento na DUARTE MOTOS (nota nº '+n.num+', '+n.data+'):\n'+(n.moto?'Moto: '+n.moto+'\n':'')+it+'\nTotal: '+R(n.total)+' ('+n.pg+')\nObrigado pela preferência!')}
+function zapCobrar(id){const f=D.fiados.find(x=>x.id==id),r=f.v-f.pago,t=pedeTel(f.cli);if(!t)return;
+wa(t,'Olá, '+f.cli+'! Tudo bem? Passando para lembrar do valor em aberto de '+R(r)+' na DUARTE MOTOS'+(f.num?' (nota nº '+f.num+')':'')+'.'+(D.cfg.k?'\nChave Pix: '+D.cfg.k:'')+'\nQualquer dúvida, estamos à disposição.')}
+function saveWa(){D.cfg.wa=$('wn').value.trim();D.cfg.wm=$('wm').value.trim();save();$('wmsg').textContent='Salvo.'}
+function copiarWa(){try{navigator.clipboard.writeText(WAU)}catch(e){prompt('Copie o link:',WAU)}}
+function wtpl(){const c=D.clientes.find(x=>x.id==$('wc').value),n=c?c.n.split(' ')[0]:'',t=$('wt').value;
+$('wx').value=t=='0'?'Olá, '+n+'! Sua moto já está pronta para retirada na DUARTE MOTOS. Estamos te aguardando!':t=='1'?'Olá, '+n+'! Está chegando a hora da revisão da sua moto na DUARTE MOTOS. Vamos agendar um horário?':''}
+function wsend(){const c=D.clientes.find(x=>x.id==$('wc').value);if(!c){alert('Escolha um cliente');return}if(!$('wx').value.trim()){alert('Escreva a mensagem');return}wa(c.tel,$('wx').value)}
+function rw(){const e=$('wc'),v=e.value;e.innerHTML='<option value="">Escolha o cliente</option>'+D.clientes.map(c=>`<option value="${c.id}">${esc(c.n)}</option>`).join('');e.value=v;
+const f=fone(D.cfg.wa),o=$('wl');if(!f){o.innerHTML='<small>Informe o número da empresa para gerar o link de atendimento.</small>';return}
+const u='https://wa.me/'+f+(D.cfg.wm?'?text='+encodeURIComponent(D.cfg.wm):'');WAU=u;
+try{const q=qrcode(0,'M');q.addData(u);q.make();o.innerHTML=`<p>Link de atendimento: <a href="${u}" target="_blank" rel="noopener">${u}</a></p><div class="row"><button class="btn s" onclick="copiarWa()">Copiar link</button></div><div style="background:#fff;padding:10px;display:inline-block;border-radius:8px">${q.createSvgTag(5)}</div><p><small>Imprima este QR Code e deixe no balcão: o cliente fala direto com a oficina.</small></p>`}catch(e){}}
+const MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const short=v=>v>=1000?(v/1000).toFixed(1).replace(/\.0$/,'')+'k':String(Math.round(v));
+const fdt=f=>{if(f.ts)return new Date(f.ts);const m=String(f.data).match(/(\d{2})\/(\d{2})\/(\d{4})/);return m?new Date(+m[3],m[2]-1,+m[1]):new Date(0)};
+function bars(labels,series,colors){const W=420,H=220,pl=40,pb=26,pt=10,max=Math.max(1,...series.flat()),n=labels.length,gw=(W-pl-6)/n,k=series.length,bw=Math.min(26,gw/(k+0.6));let g='';
+for(let i=0;i<=4;i++){const y=pt+(H-pt-pb)*(1-i/4);g+=`<line x1="${pl}" x2="${W-4}" y1="${y}" y2="${y}" stroke="currentColor" opacity=".12"/><text x="${pl-4}" y="${y+3}" font-size="9" text-anchor="end" fill="currentColor" opacity=".7">${short(max*i/4)}</text>`}
+labels.forEach((l,i)=>{const x0=pl+gw*i+gw/2-bw*k/2;series.forEach((s,j)=>{const h=(H-pt-pb)*s[i]/max;g+=`<rect x="${x0+bw*j}" y="${H-pb-h}" width="${bw-2}" height="${Math.max(h,0)}" rx="2" fill="${colors[j]}"><title>${l}: ${R(s[i])}</title></rect>`});g+=`<text x="${pl+gw*i+gw/2}" y="${H-8}" font-size="10" text-anchor="middle" fill="currentColor" opacity=".8">${l}</text>`});
+return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;color:var(--tx)">${g}</svg>`}
+function rch(){const h=new Date(),ms=[];for(let i=5;i>=0;i--){const d=new Date(h.getFullYear(),h.getMonth()-i,1);ms.push({y:d.getFullYear(),m:d.getMonth(),e:0,s:0})}
+D.fin.forEach(f=>{const d=fdt(f),x=ms.find(q=>q.y==d.getFullYear()&&q.m==d.getMonth());if(x){if(f.t=='in')x.e+=f.v;else x.s+=f.v}});
+$('ch1').innerHTML=bars(ms.map(q=>MES[q.m]),[ms.map(q=>q.e),ms.map(q=>q.s)],['#16a34a','#dc2626'])+'<div style="font-size:12px"><span style="color:#16a34a">■</span> Entradas &nbsp; <span style="color:#dc2626">■</span> Saídas</div>';
+const dias=[];for(let i=14;i>=0;i--){const d=new Date(h.getFullYear(),h.getMonth(),h.getDate()-i);dias.push({k:d.toDateString(),l:String(d.getDate()),e:0})}
+D.fin.forEach(f=>{if(f.t!='in')return;const x=dias.find(q=>q.k==fdt(f).toDateString());if(x)x.e+=f.v});
+$('ch2').innerHTML=bars(dias.map(q=>q.l),[dias.map(q=>q.e)],['#2563eb']);
+const mm=ms[5],r=mm.e-mm.s;
+$('kpis2').innerHTML=K('Entradas hoje',R(dias[14].e))+K('Entradas no mês',R(mm.e))+K('Saídas no mês',R(mm.s))+K('Resultado do mês',`<span class="${r<0?'out':'in'}">${R(r)}</span>`)+K('Folha mensal',R(D.func.reduce((a,f)=>a+f.sal,0)))}
+const mesAtual=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
+const pagoMes=id=>D.pagtos.filter(p=>p.fid==id&&p.mes==mesAtual()).reduce((a,p)=>a+p.v,0);
+function addFunc(){const n=$('fnn').value.trim(),s=+$('fsl').value;if(!n||!(s>0)){alert('Informe nome e salário');return}D.func.push({id:Date.now(),n,cg:$('fcg').value.trim(),sal:s,tel:$('ftl').value.trim(),adm:$('fad').value});['fnn','fcg','fsl','ftl','fad'].forEach(i=>$(i).value='');save()}
+function delFunc(id){if(!confirm('Excluir funcionário? O histórico de pagamentos é mantido.'))return;D.func=D.func.filter(x=>x.id!=id);save()}
+function pagarFunc(id){const f=D.func.find(x=>x.id==id),r=Math.max(0,f.sal-pagoMes(id)),v=num(prompt('Valor a pagar a '+f.n+' (salário '+R(f.sal)+', restante do mês '+R(r)+')',r.toFixed(2)));if(isNaN(v))return;if(!(v>0)){alert('Valor inválido');return}
+const data=now(),pid=Date.now();D.pagtos.unshift({id:pid,fid:id,n:f.n,mes:mesAtual(),v,data});D.gastos.unshift({id:pid+1,data,cat:'Salários',d:'Salário – '+f.n,v});D.fin.unshift({data,t:'out',d:'Salários: '+f.n,v});save()}
+function recibo(pid){const p=D.pagtos.find(x=>x.id==pid);if(!p)return;const w=window.open('','_blank');if(!w){alert('Permita pop-ups para imprimir');return}
+w.document.write(`<title>Recibo</title><body style="font-family:Arial;max-width:600px;margin:30px auto"><h2 style="margin:0">DUARTE MOTOS</h2><small>Recibo de pagamento de salário</small><hr><p>Recebi de DUARTE MOTOS a quantia de <b>${R(p.v)}</b>, referente ao salário do mês ${p.mes.slice(5)}/${p.mes.slice(0,4)}.</p><p>Funcionário: <b>${esc(p.n)}</b><br>Data do pagamento: ${p.data}</p><br><br><p>_______________________________<br>Assinatura do funcionário</p><script>print()<\/script>`);w.document.close()}
+function rfu(){const fol=D.func.reduce((a,f)=>a+f.sal,0),pg=D.func.reduce((a,f)=>a+Math.min(f.sal,pagoMes(f.id)),0);
+$('fuk').innerHTML=K('Funcionários',D.func.length)+K('Folha mensal',R(fol))+K('Pago no mês',R(pg))+K('A pagar no mês',R(Math.max(0,fol-pg)));
+$('tbFu').innerHTML=D.func.length?`<table><tr><th>Nome</th><th>Cargo</th><th>Telefone</th><th>Admissão</th><th>Salário</th><th>Situação (mês)</th><th class="np"></th></tr>${D.func.map(f=>{const p=pagoMes(f.id),st=p>=f.sal-0.005?'<span class="in">Pago</span>':p>0?`<span class="low">Parcial (${R(p)})</span>`:'<span class="low">Pendente</span>';return `<tr><td>${esc(f.n)}</td><td>${esc(f.cg)}</td><td>${esc(f.tel)}</td><td>${f.adm?f.adm.split('-').reverse().join('/'):'-'}</td><td>${R(f.sal)}</td><td>${st}</td><td class="np"><button class="btn s" onclick="pagarFunc(${f.id})">Pagar salário</button> <button class="btn s" onclick="delFunc(${f.id})">Excluir</button></td></tr>`}).join('')}</table>`:'<small>Nenhum funcionário cadastrado.</small>';
+$('tbPg').innerHTML=D.pagtos.length?`<table><tr><th>Data</th><th>Funcionário</th><th>Mês ref.</th><th>Valor</th><th class="np"></th></tr>${D.pagtos.slice(0,30).map(p=>`<tr><td>${p.data}</td><td>${esc(p.n)}</td><td>${p.mes.slice(5)}/${p.mes.slice(0,4)}</td><td>${R(p.v)}</td><td class="np"><button class="btn s" onclick="recibo(${p.id})">Recibo</button> <button class="btn s" onclick="delPag(${p.id})">Excluir</button></td></tr>`).join('')}</table>`:'<small>Nenhum pagamento.</small>'}
+let BKCFG={pluggy:false,items:0},bkT;
+const bkMsg=m=>{if($('bkm'))$('bkm').textContent=m};
+const numBR=s=>{s=String(s).trim().replace(/R\$|\s/g,'');if(/,\d{1,2}$/.test(s))s=s.replace(/\./g,'').replace(',','.');return parseFloat(s)};
+const dtBR=s=>{s=String(s).trim();let m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);if(m)return new Date(+m[3],m[2]-1,+m[1]).getTime();m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);return m?new Date(+m[1],m[2]-1,+m[3]).getTime():NaN};
+function dedup(L,pre){const c={};return L.map(x=>{const k=pre+x.ts+'|'+x.v+'|'+x.d;c[k]=(c[k]||0)+1;return{...x,id:k+'#'+c[k]}})}
+function parseOFX(t){const A=[],B=[];(t.match(/<STMTTRN>[\s\S]*?(?=<\/STMTTRN>|<STMTTRN>|<\/BANKTRANLIST>|$)/gi)||[]).forEach(b=>{const g=k=>{const m=b.match(new RegExp('<'+k+'>([^<\\r\\n]*)','i'));return m?m[1].trim():''};const dt=g('DTPOSTED'),v=parseFloat(g('TRNAMT').replace(',','.'));if(!dt||isNaN(v))return;const x={ts:new Date(+dt.slice(0,4),+dt.slice(4,6)-1,+dt.slice(6,8)).getTime(),v,d:g('MEMO')||g('NAME')||'Lançamento'},f=g('FITID');if(f)A.push({...x,id:'o-'+f});else B.push(x)});return A.concat(dedup(B,'o-'))}
+function parseCSV(t){const L=t.split(/\r?\n/).filter(x=>x.trim());if(L.length<2)return[];const sep=(L[0].match(/;/g)||[]).length>=(L[0].match(/,/g)||[]).length?';':',',sp=l=>l.split(sep).map(x=>x.replace(/^"|"$/g,'').trim()),H=sp(L[0]).map(x=>x.toLowerCase()),ix=re=>H.findIndex(h=>re.test(h)),iD=ix(/data|date/),iT=ix(/descri|hist|lan[cç]|memo|detalhe/),iV=ix(/valor|amount|value/);if(iD<0||iV<0)return[];
+const out=[];L.slice(1).forEach(l=>{const c=sp(l),ts=dtBR(c[iD]),v=numBR(c[iV]);if(isNaN(ts)||isNaN(v))return;out.push({ts,v,d:(iT>=0?c[iT]:'')||'Lançamento'})});return dedup(out,'c-')}
+function addBanco(L){const ids=new Set(D.banco.map(x=>x.id));let n=0;L.forEach(x=>{if(!ids.has(x.id)){ids.add(x.id);D.banco.push({id:x.id,ts:x.ts,d:x.d,v:x.v,conta:x.conta||'',st:'novo'});n++}});D.banco.sort((a,b)=>b.ts-a.ts);return n}
+function bkArq(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const buf=r.result;let t;try{t=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(e){t=new TextDecoder('windows-1252').decode(buf)}
+const L=/<STMTTRN>/i.test(t)?parseOFX(t):parseCSV(t);inp.value='';if(!L.length){bkMsg('Não consegui ler movimentações desse arquivo. Use OFX, ou CSV com colunas de data, descrição e valor.');return}const n=addBanco(L);save();bkMsg(n+' novas movimentações importadas ('+(L.length-n)+' já existiam).')};r.readAsArrayBuffer(f)}
+const dup=b=>D.fin.some(f=>f.t==(b.v>0?'in':'out')&&Math.abs(f.v-Math.abs(b.v))<0.005&&Math.abs(fdt(f)-b.ts)<=3*864e5);
+const bkFin=b=>{D.fin.unshift({ts:b.ts,data:new Date(b.ts).toLocaleString('pt-BR'),t:b.v>0?'in':'out',d:'Banco: '+b.d,v:Math.abs(b.v),bk:b.id});b.st='lancado'};
+function bkLanca(id){const b=D.banco.find(x=>x.id==id);if(!b||b.st!='novo')return;bkFin(b);save()}
+function bkSt(id,st){const b=D.banco.find(x=>x.id==id);if(!b)return;b.st=st;save()}
+function bkTodos(){const L=D.banco.filter(b=>b.st=='novo'&&!dup(b)),ign=D.banco.filter(b=>b.st=='novo').length-L.length;if(!L.length){alert('Não há pendentes sem suspeita de duplicidade.');return}if(!confirm('Lançar '+L.length+' movimentações no Financeiro?'+(ign?'\n'+ign+' com possível duplicidade ficam de fora para você conferir.':'')))return;L.forEach(bkFin);save()}
+function rbk(){const lim=Date.now()-30*864e5,rec=D.banco.filter(b=>b.ts>=lim),en=rec.filter(b=>b.v>0).reduce((a,b)=>a+b.v,0),sa=rec.filter(b=>b.v<0).reduce((a,b)=>a-b.v,0),pend=D.banco.filter(b=>b.st=='novo').length,sd=D.contas.reduce((a,c)=>a+(+c.saldo||0),0);
+$('bkk').innerHTML=(D.contas.length?K('Saldo nas contas',R(sd)):'')+K('Entradas no banco (30 dias)',R(en))+K('Saídas no banco (30 dias)',R(sa))+K('Pendentes de conciliação',pend);
+$('bkc').style.display=BKCFG.pluggy?'':'none';$('bks').style.display=BKCFG.pluggy&&BKCFG.items?'':'none';$('bkd').style.display=BKCFG.pluggy&&BKCFG.items?'':'none';
+const L=D.banco.filter(b=>$('bkfl').value=='t'||b.st=='novo'),SIT={lancado:'Lançado',conc:'Já estava lançado',ign:'Ignorado'};
+$('bkt').innerHTML=L.length?`<table><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Situação</th><th class="np"></th></tr>${L.slice(0,300).map(b=>`<tr><td>${new Date(b.ts).toLocaleDateString('pt-BR')}</td><td>${esc(b.d)}${b.conta?` <small>(${esc(b.conta)})</small>`:''}</td><td class="${b.v>0?'in':'out'}">${b.v>0?'+':'−'} ${R(Math.abs(b.v))}</td><td>${b.st=='novo'?(dup(b)?'<span class="low">Possível duplicado</span>':'Pendente'):SIT[b.st]}</td><td class="np">${b.st=='novo'?`<button class="btn s" onclick="bkLanca('${b.id.replace(/'/g,"\\'")}')">Lançar</button> <button class="btn s" onclick="bkSt('${b.id.replace(/'/g,"\\'")}','conc')">Já lançado</button> <button class="btn s" onclick="bkSt('${b.id.replace(/'/g,"\\'")}','ign')">Ignorar</button>`:''}</td></tr>`).join('')}</table>`:'<small>Nenhuma movimentação. Conecte o banco ou importe um extrato.</small>'}
+async function bkInit(){try{BKCFG=await api('/api/banco/config');rbk();if(BKCFG.pluggy&&BKCFG.items){bkSync(true);clearInterval(bkT);bkT=setInterval(()=>bkSync(true),15*60e3)}else if(!BKCFG.pluggy)bkMsg('Open Finance automático ainda não está ativado no servidor. Você já pode importar o extrato em OFX ou CSV.')}catch(e){}}
+async function bkSync(q){try{if(!q)bkMsg('Sincronizando…');const r=await api('/api/banco/sync',{}),n=addBanco(r.txs||[]);D.contas=r.contas||[];D.bkSync=now();save();if(!q)bkMsg(n+' novas movimentações. Última sincronização: '+D.bkSync)}catch(e){if(!q)bkMsg(e.message)}}
+async function bkConectar(){try{if(!window.PluggyConnect){await new Promise((ok,er)=>{const s=document.createElement('script');s.src='https://cdn.pluggy.ai/pluggy-connect/v2.7.0/pluggy-connect.js';s.onload=ok;s.onerror=()=>er(new Error('Não foi possível carregar o Pluggy Connect'));document.head.appendChild(s)})}
+const r=await api('/api/banco/connect-token',{}),pc=new PluggyConnect({connectToken:r.accessToken,onSuccess:async d=>{try{const id=(d.item&&d.item.id)||d.id;await api('/api/banco/item',{itemId:id});BKCFG.items=(BKCFG.items||0)+1;bkMsg('Banco conectado! Buscando movimentações…');await bkSync();bkInit()}catch(e){bkMsg(e.message)}},onError:e=>bkMsg((e&&e.message)||'Erro na conexão com o banco')});pc.init()}catch(e){bkMsg(e.message)}}
+async function bkDesc(){if(!confirm('Desconectar o banco? As movimentações já importadas continuam no sistema.'))return;try{await api('/api/banco/desconectar',{});BKCFG.items=0;clearInterval(bkT);rbk();bkMsg('Banco desconectado.')}catch(e){bkMsg(e.message)}}
+function render(){rbk();rch();rfu();rw();rcli();rp();rv();rf();rg();rfo();
+const ent=D.fin.filter(f=>f.t=='in').reduce((a,f)=>a+f.v,0),sai=D.fin.filter(f=>f.t=='out').reduce((a,f)=>a+f.v,0),baixo=D.est.filter(p=>p.q<=p.m);
+const k=(l,v)=>`<div class="card kpi"><small>${l}</small><b>${v}</b></div>`;
+$('kpis').innerHTML=k('Peças em estoque',D.est.reduce((a,p)=>a+p.q,0))+k('Valor em estoque (custo)',R(D.est.reduce((a,p)=>a+p.q*p.c,0)))+k('Notas emitidas',D.notas.length)+k('Saldo',R(ent-sai))+k('A receber (fiados)',R(D.fiados.reduce((a,f)=>a+f.v-f.pago,0)))+k('Devo a fornecedores',R(D.forn.reduce((a,f)=>a+f.deb,0)));
+$('fk').innerHTML=k('Entradas',R(ent))+k('Saídas',R(sai))+k('Saldo',R(ent-sai));
+$('baixo').innerHTML=baixo.length?`<table>${baixo.map(p=>`<tr><td>${esc(p.n)}</td><td class="low">${p.q} un (mín ${p.m})</td></tr>`).join('')}</table>`:'<small>Tudo em ordem.</small>';
+$('tbEst').innerHTML=D.est.length?`<table><tr><th>Peça</th><th>Qtd</th><th>Mín</th><th>Custo</th><th>Venda</th><th></th></tr>${D.est.map(p=>`<tr><td>${esc(p.n)}</td><td class="${p.q<=p.m?'low':''}">${p.q}</td><td>${p.m}</td><td>${R(p.c)}</td><td>${R(p.v)}</td><td><button class="btn s" onclick="ajusta(${p.id},1)">+</button> <button class="btn s" onclick="ajusta(${p.id},-1)">−</button> <button class="btn s" onclick="delPeca(${p.id})">x</button></td></tr>`).join('')}</table>`:'<small>Nenhuma peça cadastrada.</small>';
+$('ns').innerHTML='<option value="">Selecione peça</option>'+D.est.map(p=>`<option value="${p.id}">${esc(p.n)} (${p.q}) – ${R(p.v)}</option>`).join('');
+$('tbNotas').innerHTML=D.notas.length?`<table><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Total</th><th></th></tr>${D.notas.map(n=>`<tr><td>${n.num}</td><td>${n.data}</td><td>${esc(n.cli)}</td><td>${R(n.total)}</td><td><button class="btn s" onclick="imprimir(${n.num})">Imprimir</button> <button class="btn s" onclick="zapNota(${n.num})">WhatsApp</button> <button class="btn s" onclick="delNota(${n.num})">Excluir</button></td></tr>`).join('')}</table>`:'<small>Nenhuma nota.</small>';
+$('tbFin').innerHTML=D.fin.length?`<table><tr><th>Data</th><th>Descrição</th><th>Valor</th><th class="np"></th></tr>${D.fin.map((f,i)=>`<tr><td>${f.data}</td><td>${esc(f.d)}</td><td class="${f.t}">${f.t=='in'?'+':'−'} ${R(f.v)}</td><td class="np"><button class="btn s" onclick="delFin(${i})">Excluir</button></td></tr>`).join('')}</table>`:'<small>Sem lançamentos.</small>'}
+function start(){$('cp').value=D.cfg.k||'';$('cn').value=D.cfg.n||'';$('cc').value=D.cfg.c||'';$('cl').value=D.cfg.l||'';$('wn').value=D.cfg.wa||'';$('wm').value=D.cfg.wm||'';go('painel');render();renderCart();bkInit()}
+let modo='login',tem=false;
+async function api(u,b){const r=await fetch(u,b?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}:{});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.erro||'Erro');return j}
+function telaAuth(){$('auth').style.display='flex';const c=modo=='cad';$('atit').textContent=c?'Criar conta':'Entrar';$('abtn').textContent=c?'Cadastrar':'Entrar';$('acodw').style.display=c&&tem?'':'none';$('ap').autocomplete=c?'new-password':'current-password';$('asub').textContent=tem?'Gestão da oficina':'Primeiro acesso: crie a conta do administrador';$('atg').style.display=tem?'':'none';$('atg').textContent=c?'Já tenho conta':'Cadastre-se'}
+function alterna(){modo=modo=='login'?'cad':'login';$('aerr').textContent='';telaAuth()}
+async function enviar(){try{$('aerr').textContent='';await api(modo=='login'?'/api/login':'/api/signup',{user:$('au').value,pass:$('ap').value,code:$('acod').value});$('ap').value='';await entrar()}catch(e){$('aerr').textContent=e.message}}
+async function entrar(){D=await api('/api/data');D.cfg=D.cfg||{};D.fiados=D.fiados||[];D.gastos=D.gastos||[];D.forn=D.forn||[];D.clientes=D.clientes||[];D.func=D.func||[];D.pagtos=D.pagtos||[];D.banco=D.banco||[];D.contas=D.contas||[];$('auth').style.display='none';$('sair').style.display='';start()}
+async function sair(){await api('/api/logout',{});location.reload()}
+(async()=>{try{const s=await api('/api/status');tem=s.hasUsers;if(s.logged)return entrar();modo=tem?'login':'cad';telaAuth()}catch(e){document.body.innerHTML='<p style="padding:20px">Servidor indisponível.</p>'}})();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+</script></body></html>

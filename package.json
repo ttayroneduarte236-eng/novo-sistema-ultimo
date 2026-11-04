@@ -1,0 +1,4 @@
+{ "name": "duarte-motos", "version": "1.0.0", "private": true,
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "bcryptjs": "^2.4.3", "express": "^4.19.2" } }
